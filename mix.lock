@@ -1,1 +1,1 @@
-%{"erlzk": {:git, "git://github.com/huaban/erlzk.git", "a005aab956e88686d8d9e719cb3937ae91c98b68", []}}
+%{"erlzk": {:git, "git://github.com/huaban/erlzk.git", "a005aab956e88686d8d9e719cb3937ae91c98b68", [ref: "a005aab956e88686d8d9e719cb3937ae91c98b68"]}}

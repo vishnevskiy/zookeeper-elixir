@@ -20,7 +20,7 @@ defmodule Zookeeper.Mixfile do
 
   defp deps do
     [
-      {:erlzk, github: "huaban/erlzk"}
+      {:erlzk, github: "huaban/erlzk", ref: "a005aab956e88686d8d9e719cb3937ae91c98b68"}
     ]
   end
 
