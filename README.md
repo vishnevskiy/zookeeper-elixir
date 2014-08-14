@@ -15,7 +15,7 @@ end
 
 # Overview 
 
-The goal of this project is to provide a Zookeeper for Elixir that follows the philosophy [Kazoo](http://kazoo.readthedocs.org/) for Python. It implements a clean API and provides common receipes
+The goal of this project is to provide a Zookeeper client for Elixir that follows the philosophy [Kazoo](http://kazoo.readthedocs.org/) for Python. It implements a clean API and provides common receipes
 around the Zookeeper API such as Locks, Election and more.
 
 The implementation is currently wrapping [erlzk](https://github.com/huaban/erlzk) which is the best Erlang Zookeeper client I could find and exposes a clean API. It ensures everything is using strings instead of char lists and provides a couple recipes. 
