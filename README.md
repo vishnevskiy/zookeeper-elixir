@@ -24,7 +24,7 @@ There are some qwerks from wrapping **erlzk** which I would like to eventually g
 
 # Usage
 
-The code is fairly documented and  as tests and typespecs so just reading it should provide all the information needed to use the library effectively.
+The code is fairly documented and has tests and typespecs so just reading it should provide all the information needed to use the library effectively.
 
 
 ```elixir
