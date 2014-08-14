@@ -30,8 +30,8 @@ The code is fairly documented and  as tests and typespecs so just reading it sho
 ```elixir
 {:ok, pid} = Zookeeper.Client.connect
 {:ok, path} = Zookeeper.Client.create(pid, "/testing", "some data")
-{:ok, {data, stat}} = Zookeeper.Client.get(pid, "/testing", self())
-{:ok, stat} = Zookeeper.Client.set(pid, "/testing", "some new data")
+{:ok, {data, stat}} = Zookeeper.Client.get(pid, path, self())
+{:ok, stat} = Zookeeper.Client.set(pid, path, "some new data")
 receive do
   {Zookeeper.Client, ^path, :data} -> IO.puts("data changed in #{path}")
 end
