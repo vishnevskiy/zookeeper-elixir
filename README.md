@@ -20,7 +20,7 @@ around the Zookeeper API such as Locks, Election and more.
 
 The implementation is currently wrapping [erlzk](https://github.com/huaban/erlzk) which is the best Erlang Zookeeper client I could find and exposes a clean API. It ensures everything is using strings instead of char lists and provides a couple recipes. 
 
-There are some qwerks from wrapping **erlzk** which I would like to eventually get rid of by implementing the actual Zookeeper communication in Elixir and wrapping the **erlzk** dependency. 
+There are some quirks from wrapping **erlzk** which I would like to eventually get rid of by implementing the actual Zookeeper communication in Elixir and wrapping the **erlzk** dependency. 
 
 # Usage
 
