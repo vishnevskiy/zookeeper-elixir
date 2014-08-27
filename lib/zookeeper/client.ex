@@ -9,7 +9,7 @@ defmodule Zookeeper.Client do
                     chroot: char_list,
                     disable_watch_auto_reset: boolean,
                     auth_data: [{char_list, binary}],
-                    monitor: pid]
+                    stop_on_disconnect: boolean]
   @type acl :: {[perms], scheme, id}
   @type perms :: :r | :w | :c | :d | :a
   @type scheme :: char_list
