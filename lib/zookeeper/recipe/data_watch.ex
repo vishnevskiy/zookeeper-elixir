@@ -53,6 +53,7 @@ defmodule Zookeeper.DataWatch do
       watcher: watcher,
       prior_data: nil,
     }
+    Process.monitor(client)
     case maybe_get_data(state) do
       {:noreply, state} -> {:ok, state}
       {:stop, reason, _state} -> {:stop, reason}
@@ -75,6 +76,10 @@ defmodule Zookeeper.DataWatch do
     maybe_get_data(state)
   end
 
+  def handle_info({:DOWN, _ref, :process, pid, reason}, %{client: pid}=state) do
+    {:stop, reason, state}
+  end
+
   def handle_info(_message, state) do
     {:noreply, state}
   end
@@ -94,7 +99,7 @@ defmodule Zookeeper.DataWatch do
       {:ok, {data, stat}} -> {:noreply, maybe_send_data({data, stat}, state)}
       {:error, :no_node} ->
         case Zookeeper.Client.exists(state.client, state.path, self()) do
-          {:ok, state} -> get_data(state)
+          {:ok, _stat} -> get_data(state)
           {:error, :no_node} -> {:noreply, maybe_send_data({nil, nil}, state)}
           {:error, reason} -> {:stop, reason, state}
         end

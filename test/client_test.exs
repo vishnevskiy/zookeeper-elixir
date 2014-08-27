@@ -7,7 +7,7 @@ defmodule Zookeeper.ClientTest do
   # TODO: test ACL
 
   setup_all do
-    {:ok, pid} = ZK.connect
+    {:ok, pid} = ZK.start_link
     pid |> cleanup
     {:ok, pid: pid}
   end
@@ -47,7 +47,7 @@ defmodule Zookeeper.ClientTest do
   end
 
   test "create sequential", %{pid: pid} do
-    assert {:ok, "/exunit" <> seq} = ZK.create(pid, "/exunit", "", create_mode: :persistent_sequential)
+    assert {:ok, "/exunit/s" <> seq} = ZK.create(pid, "/exunit/s", "", create_mode: :persistent_sequential, makepath: true)
     assert String.length(seq) > 0
   end
 
