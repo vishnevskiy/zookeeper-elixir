@@ -38,7 +38,8 @@ defmodule Zookeeper.Client do
   @spec start(hosts, options) :: {:ok, pid} | {:error, atom}
   def start(hosts \\ "127.0.0.1:2181", options \\ []) do
     {timeout, options} = Keyword.pop(options, :timeout, 10000)
-    GenServer.start(__MODULE__, {hosts, timeout}, options)
+    {stop_on_disconnect, options} = Keyword.pop(options, :stop_on_disconnect, false)
+    GenServer.start(__MODULE__, {hosts, timeout, stop_on_disconnect}, options)
   end
 
   @doc """
@@ -47,7 +48,8 @@ defmodule Zookeeper.Client do
   @spec start_link(hosts, options) :: {:ok, pid} | {:error, atom}
   def start_link(hosts \\ "127.0.0.1:2181", options \\ []) do
     {timeout, options} = Keyword.pop(options, :timeout, 10000)
-    GenServer.start_link(__MODULE__, {hosts, timeout}, options)
+    {stop_on_disconnect, options} = Keyword.pop(options, :stop_on_disconnect, false)
+    GenServer.start_link(__MODULE__, {hosts, timeout, stop_on_disconnect}, options)
   end
 
   @doc """
@@ -150,11 +152,15 @@ defmodule Zookeeper.Client do
 
   ## Server
 
-  def init({hosts, timeout}) do
+  def init({hosts, timeout, stop_on_disconnect}) do
     {:ok, pid} = hosts 
       |> parse_hosts 
       |> :erlzk.connect(timeout, monitor: self)
-    {:ok, %{zk: pid, watchers: HashDict.new}}
+    {:ok, %{zk: pid, watchers: HashDict.new, stop_on_disconnect: stop_on_disconnect}}
+  end
+
+  def terminate(_reason, %{zk: zk}) do
+    :erlzk.close(zk)
   end
 
   def handle_call(:close, _from, %{zk: zk}=state) do
@@ -225,6 +231,18 @@ defmodule Zookeeper.Client do
 
   def handle_info({:get_children, path, _event}, state) do
     {:noreply, %{state | watchers: notify_watchers(state.watchers, :children, path)}}
+  end 
+
+  def handle_info({:connected, _host, _port}, state) do
+    {:noreply, state}
+  end 
+
+  def handle_info({:disconnected, _host, _port}, %{stop_on_disconnect: true}=state) do
+    {:stop, :disconnected, state}
+  end 
+
+  def handle_info({:expired, _host, _port}, state) do
+    {:noreply, state}
   end 
 
   def handle_info(_message, state) do
