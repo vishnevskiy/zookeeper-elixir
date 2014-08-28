@@ -164,7 +164,7 @@ defmodule Zookeeper.Client do
   end
 
   def handle_call(:close, _from, %{zk: zk}=state) do
-    {:stop, :normal, :erlzk.close(zk), state}
+    {:stop, :normal, :ok, state}
   end
 
   def handle_call({:create, path, value, opts}, _from, %{zk: zk}=state) do

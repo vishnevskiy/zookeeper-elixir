@@ -20,7 +20,6 @@ defmodule Zookeeper.ChildrenWatch do
     GenServer.start(__MODULE__, {client, path, self()})
   end
 
-
   @doc """
   Create a children watcher for a path.
   """

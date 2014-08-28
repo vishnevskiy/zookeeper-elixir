@@ -14,13 +14,14 @@ defmodule Zookeeper.Mixfile do
 
   def application do
     [
-      applications: [:erlzk],
+      applications: [:erlzk, :uuid, :logger],
     ]
   end
 
   defp deps do
     [
-      {:erlzk, github: "huaban/erlzk", ref: "a005aab956e88686d8d9e719cb3937ae91c98b68"}
+      {:erlzk, github: "huaban/erlzk", ref: "a005aab956e88686d8d9e719cb3937ae91c98b68"},
+      {:uuid, "~> 0.1.5"},
     ]
   end
 
