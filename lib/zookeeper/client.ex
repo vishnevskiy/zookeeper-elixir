@@ -155,12 +155,12 @@ defmodule Zookeeper.Client do
   def init({hosts, timeout, stop_on_disconnect}) do
     {:ok, pid} = hosts 
       |> parse_hosts 
-      |> :erlzk.connect(timeout, monitor: self)
+      |> :erlzk_conn.start_link(timeout, monitor: self)
     {:ok, %{zk: pid, watchers: HashDict.new, stop_on_disconnect: stop_on_disconnect}}
   end
 
   def terminate(_reason, %{zk: zk}) do
-    :erlzk.close(zk)
+    :erlzk_conn.stop(zk)
   end
 
   def handle_call(:close, _from, %{zk: zk}=state) do

@@ -66,7 +66,7 @@ defmodule Zookeeper.Election do
     {:ok, state}
   end
 
-  def terminate(_reason, %{client: zk, path: path, node: node, pid: pid}) when node != nil do
+  def terminate(_reason, %{client: zk, path: path, node: node}) when node != nil do
     Zookeeper.Client.delete(zk, "#{path}/#{node}")
   end
   def terminate(_reason, _state), do: :ok
@@ -75,7 +75,7 @@ defmodule Zookeeper.Election do
     {:stop, :normal, :ok, state}
   end
 
-  def handle_call(:contenders, _from, %{client: zk, children: cw, path: path}=state) do
+  def handle_call(:contenders, _from, %{client: zk, path: path}=state) do
     contenders = sorted_children(state)
       |> Enum.map(
         fn node -> 
@@ -89,7 +89,7 @@ defmodule Zookeeper.Election do
     {:reply, contenders, state}
   end
 
-  def handle_info({Zookeeper.ChildrenWatch, _pid, path, :children, _}, %{pid: nil, node: node, ma: {module, args}}=state) do
+  def handle_info({Zookeeper.ChildrenWatch, _pid, _path, :children, _}, %{pid: nil, node: node, ma: {module, args}}=state) do
     children = sorted_children(state)
     if List.first(children) == node do
       {:ok, pid} = apply(module, :start_link, args)
@@ -98,7 +98,7 @@ defmodule Zookeeper.Election do
     {:noreply, state}
   end
 
-  def handle_info(message, state) do
+  def handle_info(_message, state) do
     {:noreply, state}
   end
 
