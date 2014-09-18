@@ -2,7 +2,7 @@ language: erlang
 otp_release:
   - 17.1
 env:
-  - ELIXIR_VERSION=0.15.1
+  - ELIXIR_VERSION=1.0.0
 before_install:
   - sudo apt-get update
   - sudo apt-get install zookeeperd

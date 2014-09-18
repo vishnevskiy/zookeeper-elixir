@@ -85,7 +85,7 @@ defmodule Zookeeper.Election do
           end
         end
       )
-      |> Enum.reject &nil?(&1)
+      |> Enum.reject &is_nil(&1)
     {:reply, contenders, state}
   end
 
