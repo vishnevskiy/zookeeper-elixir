@@ -163,7 +163,7 @@ defmodule Zookeeper.Client do
     :erlzk_conn.stop(zk)
   end
 
-  def handle_call(:close, _from, %{zk: zk}=state) do
+  def handle_call(:close, _from, state) do
     {:stop, :normal, :ok, state}
   end
 
