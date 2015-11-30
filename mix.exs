@@ -5,7 +5,7 @@ defmodule Zookeeper.Mixfile do
     [
       app: :zookeeper,
       version: "0.0.1",
-      elixir: "~> 1.0.0",
+      elixir: ">= 1.0.0 and < 1.2.0",
       deps: deps,
       package: package,
       description: "Zookeeper client for Elixir with common recipes."
