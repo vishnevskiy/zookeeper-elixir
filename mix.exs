@@ -5,7 +5,7 @@ defmodule Zookeeper.Mixfile do
     [
       app: :zookeeper,
       version: "0.0.1",
-      elixir: ">= 1.0.0 and < 1.2.0",
+      elixir: ">= 1.0.0",
       deps: deps,
       package: package,
       description: "Zookeeper client for Elixir with common recipes."
@@ -21,7 +21,7 @@ defmodule Zookeeper.Mixfile do
   defp deps do
     [
       {:erlzk, github: "huaban/erlzk", ref: "a005aab956e88686d8d9e719cb3937ae91c98b68"},
-      {:uuid, "~> 0.1.5"},
+      {:uuid, "~> 1.1"},
     ]
   end
 
@@ -29,7 +29,7 @@ defmodule Zookeeper.Mixfile do
     [
       contributors: ["Stanislav Vishnevskiy"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/vishnevskiy/zookeeper-elixir"} 
+      links: %{"GitHub" => "https://github.com/vishnevskiy/zookeeper-elixir"}
     ]
   end
 end

@@ -78,14 +78,14 @@ defmodule Zookeeper.Election do
   def handle_call(:contenders, _from, %{client: zk, path: path}=state) do
     contenders = sorted_children(state)
       |> Enum.map(
-        fn node -> 
+        fn node ->
           case Zookeeper.Client.get(zk, "#{path}/#{node}") do
             {:ok, {data, _stat}} -> data
             {:error, :no_node} -> nil
           end
         end
       )
-      |> Enum.reject &is_nil(&1)
+      |> Enum.reject(&is_nil(&1))
     {:reply, contenders, state}
   end
 
