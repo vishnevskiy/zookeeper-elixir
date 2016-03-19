@@ -21,6 +21,7 @@ defmodule Zookeeper.Mixfile do
   defp deps do
     [
       {:erlzk, github: "huaban/erlzk", ref: "a005aab956e88686d8d9e719cb3937ae91c98b68"},
+      {:dialyze, ">= 0.2.0", only: :dev},
       {:uuid, "~> 1.1"},
     ]
   end

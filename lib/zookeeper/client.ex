@@ -74,7 +74,7 @@ defmodule Zookeeper.Client do
   @doc """
   Recursively create a path if it doesn’t exist.
   """
-  @spec ensure_path(pid, String.t, [acl]) :: :ok | {:error, :no_auth | :invalid_acl | :no_children_for_ephemerals | :closed}
+  @spec ensure_path(pid, String.t, [acl] | nil) :: :ok | {:error, :no_auth | :invalid_acl | :no_children_for_ephemerals | :closed}
   def ensure_path(pid, path, acl \\ nil) do
     GenServer.call(pid, {:ensure_path, path, acl})
   end
@@ -82,34 +82,34 @@ defmodule Zookeeper.Client do
   @doc """
   Check if a node exists.
   """
-  @spec exists(pid, String.t, pid) :: {:ok, %ZnodeStat{}} | {:error, :no_node | :closed}
+  @spec exists(pid, String.t, pid | nil) :: {:ok, %ZnodeStat{}} | {:error, :no_node | :closed}
   def exists(pid, path, watcher \\ nil) do
     GenServer.call(pid, {:exists, path, watcher})
   end
 
-  @spec exists!(pid, String.t, pid) :: %ZnodeStat{}
+  @spec exists!(pid, String.t, pid | nil) :: %ZnodeStat{}
   def exists!(pid, path, watch \\ nil), do: apply!(&exists/3, [pid, path, watch])
 
   @doc """
   Get the value of a node.
   """
-  @spec get(pid, String.t, pid) :: {:ok, {binary, %ZnodeStat{}}} | {:error, :no_node | :no_auth | :closed}
+  @spec get(pid, String.t, pid | nil) :: {:ok, {binary, %ZnodeStat{}}} | {:error, :no_node | :no_auth | :closed}
   def get(pid, path, watcher \\ nil) do
     GenServer.call(pid, {:get, path, watcher})
   end
 
-  @spec get!(pid, String.t, pid) :: {binary, %ZnodeStat{}}
+  @spec get!(pid, String.t, pid | nil) :: {binary, %ZnodeStat{}}
   def get!(pid, path, watcher \\ nil), do: apply!(&get/3, [pid, path, watcher])
 
   @doc """
   Get a list of child nodes of a path.
   """
-  @spec get_children(pid, String.t, pid) :: {:ok, [String.t]} | {:error, :no_node | :no_auth | :closed}
+  @spec get_children(pid, String.t, pid | nil) :: {:ok, [String.t]} | {:error, :no_node | :no_auth | :closed}
   def get_children(pid, path, watcher \\ nil) do
     GenServer.call(pid, {:get_children, path, watcher})
   end
 
-  @spec get_children!(pid, String.t, pid) :: [String.t]
+  @spec get_children!(pid, String.t, pid | nil) :: [String.t]
   def get_children!(pid, path, watcher \\ nil), do: apply!(&get_children/3, [pid, path, watcher])
   
   @doc """
@@ -359,13 +359,9 @@ defmodule Zookeeper.Client do
 
   ## Private
 
-  @spec normalize_path(String.t) :: char_list
+  @spec normalize_path(String.t | char_list) :: char_list
   defp normalize_path(path) when is_bitstring(path), do: path |> String.to_char_list |> normalize_path
-
-  @spec normalize_path(char_list) :: char_list
   defp normalize_path([?/|_]=path), do: path
-
-  @spec normalize_path(char_list) :: char_list
   defp normalize_path(path), do: [?/|path]
 
   @spec parse_hosts(String.t) :: [host]
