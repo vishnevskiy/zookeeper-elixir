@@ -94,8 +94,10 @@ defmodule Zookeeper.Election do
     if List.first(children) == node do
       {:ok, pid} = apply(module, :start_link, args)
       state = %{state | pid: pid}
+      {:noreply, state}
+    else
+      {:noreply, state}
     end
-    {:noreply, state}
   end
 
   def handle_info(_message, state) do
