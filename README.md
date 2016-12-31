@@ -28,7 +28,7 @@ The code is fairly documented and has tests and typespecs so just reading it sho
 
 
 ```elixir
-{:ok, pid} = Zookeeper.Client.connect
+{:ok, pid} = Zookeeper.Client.start
 {:ok, path} = Zookeeper.Client.create(pid, "/testing", "some data")
 {:ok, {data, stat}} = Zookeeper.Client.get(pid, path, self())
 {:ok, stat} = Zookeeper.Client.set(pid, path, "some new data")
@@ -39,7 +39,6 @@ end
 
 # TODO
 
-- Implement Lock receipe
 - Implement Election recipe
 - Deal with session events and lost session scenarios
 - Re-implement Zookeeper protocol and drop **erlzk** as a depenedency.
