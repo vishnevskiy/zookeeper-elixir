@@ -14,7 +14,7 @@ defmodule Zookeeper.ElectionTest do
     end
 
     def init({test_pid, identifier}) do
-      test_pid |> send({:leader, self, identifier})
+      test_pid |> send({:leader, self(), identifier})
       {:ok, :ok}
     end
   end
@@ -70,7 +70,7 @@ defmodule Zookeeper.ElectionTest do
     {identifier, pid}
   end
   defp spawn_contender(zk, identifier) do
-    {:ok, pid} = E.start_link(zk, "/exunit", {TestServer, [identifier, self]}, identifier)
+    {:ok, pid} = E.start_link(zk, "/exunit", {TestServer, [identifier, self()]}, identifier)
     pid
   end
 end
