@@ -155,7 +155,7 @@ defmodule Zookeeper.Client do
   def init({hosts, timeout, stop_on_disconnect}) do
     {:ok, pid} = hosts 
       |> parse_hosts 
-      |> :erlzk_conn.start_link(timeout, monitor: self)
+      |> :erlzk_conn.start_link(timeout, monitor: self())
     {:ok, %{zk: pid, watchers: HashDict.new, stop_on_disconnect: stop_on_disconnect}}
   end
 
@@ -286,7 +286,7 @@ defmodule Zookeeper.Client do
   def do_exists(pid, path, watch) do
     reply = 
       if watch do
-        :erlzk_conn.exists(pid, normalize_path(path), true, self)
+        :erlzk_conn.exists(pid, normalize_path(path), true, self())
       else
         :erlzk_conn.exists(pid, normalize_path(path), false)
       end
@@ -299,7 +299,7 @@ defmodule Zookeeper.Client do
   def do_get(pid, path, watch) do
     reply = 
       if watch do
-        :erlzk_conn.get_data(pid, normalize_path(path), true, self)
+        :erlzk_conn.get_data(pid, normalize_path(path), true, self())
       else
         :erlzk_conn.get_data(pid, normalize_path(path), false)
       end
@@ -312,7 +312,7 @@ defmodule Zookeeper.Client do
   def do_get_children(pid, path, watch) do
     reply = 
       if watch do
-        :erlzk_conn.get_children(pid, normalize_path(path), true, self)
+        :erlzk_conn.get_children(pid, normalize_path(path), true, self())
       else
         :erlzk_conn.get_children(pid, normalize_path(path), false)
       end
