@@ -1,4 +1,4 @@
-defmodule Zookeeper.Client do 
+defmodule Zookeeper.Client do
   use GenServer
 
   alias Zookeeper.ZnodeStat
@@ -24,7 +24,7 @@ defmodule Zookeeper.Client do
   @zk_id_anyone_id_unsafe ['world', 'anyone']
   # This Id is only usable to set ACLs. It will get substituted with the Id's the client authenticated with.
   @zk_id_auth_ids ['auth', '']
-  
+
   # This is a completely open ACL.
   @zk_acl_open_acl_unsafe [:rwcda|@zk_id_anyone_id_unsafe] |> List.to_tuple
   # This ACL gives the creators authentication id's all permissions.
@@ -156,7 +156,7 @@ defmodule Zookeeper.Client do
     {:ok, pid} = hosts 
       |> parse_hosts 
       |> :erlzk_conn.start_link(timeout, monitor: self())
-    {:ok, %{zk: pid, watchers: HashDict.new, stop_on_disconnect: stop_on_disconnect}}
+    {:ok, %{zk: pid, watchers: %{}, stop_on_disconnect: stop_on_disconnect}}
   end
 
   def terminate(_reason, %{zk: zk}) do
@@ -366,8 +366,8 @@ defmodule Zookeeper.Client do
 
   @spec parse_hosts(String.t) :: [host]
   defp parse_hosts(hosts) when is_bitstring(hosts) do
-    hosts 
-    |> String.split(",") 
+    hosts
+    |> String.split(",")
     |> Enum.map(&String.split(&1, ":"))
     |> Enum.map(fn([host, port]) -> {String.to_char_list(host), String.to_integer(port)} end)
   end
@@ -384,10 +384,10 @@ defmodule Zookeeper.Client do
     end
   end
 
-  @spec notify_watchers(Dict.t, :exists | :data | :children, char_list) :: Dict.t
+  @spec notify_watchers(map(), :exists | :data | :children, char_list) :: map()
   defp notify_watchers(watchers, type, path) do
     path = path |> to_string
-    case Dict.pop(watchers, {type, path}) do
+    case Map.pop(watchers, {type, path}) do
       {nil, watchers} ->
         watchers
       {receivers, watchers} ->
@@ -396,12 +396,12 @@ defmodule Zookeeper.Client do
     end
   end
 
-  @spec notify_watchers(Dict.t, {:exists | :data | :children, char_list}, pid) :: Dict.t
+  @spec notify_watchers(map(), {:exists | :data | :children, char_list}, pid) :: map()
   defp update_watchers(watchers, key, watcher) do
-    if Dict.has_key?(watchers, key) do
-      watchers |> Dict.put(key, [watcher|Dict.get(watchers, key)])
+    if Map.has_key?(watchers, key) do
+      watchers |> Map.put(key, [watcher|Map.get(watchers, key)])
     else
-      watchers |> Dict.put_new(key, [watcher])
+      watchers |> Map.put_new(key, [watcher])
     end
   end
 end
