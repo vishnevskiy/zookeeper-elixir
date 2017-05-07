@@ -16,15 +16,15 @@ defmodule Zookeeper.ChildrenWatch do
   @doc """
   Create a children watcher for a path.
   """
-  def start(client, path) do
-    GenServer.start(__MODULE__, {client, path, self()})
+  def start(client, path, watcher \\ self()) do
+    GenServer.start(__MODULE__, {client, path, watcher})
   end
 
   @doc """
   Create a children watcher for a path.
   """
-  def start_link(client, path) do
-    GenServer.start_link(__MODULE__, {client, path, self()})
+  def start_link(client, path, watcher \\ self()) do
+    GenServer.start_link(__MODULE__, {client, path, watcher})
   end
 
   @doc """
