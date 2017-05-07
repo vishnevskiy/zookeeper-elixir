@@ -53,7 +53,7 @@ defmodule Zookeeper.WriteLock do
     {:noreply, state}
   end
 
-  def handle_cast(:try_lock, _from, %{return_pid: return_pid}=state) do
+  def handle_cast(:try_lock, %{return_pid: return_pid}=state) do
     case try_lock(state) do
       {:reply, value, _state} -> GenServer.reply(return_pid, value)
       _ -> nil
