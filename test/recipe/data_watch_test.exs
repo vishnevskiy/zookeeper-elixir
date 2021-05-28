@@ -8,13 +8,13 @@ defmodule Zookeeper.DataWatchTest do
   # TODO: test session lost
 
   setup_all do
-    {:ok, pid} = ZK.start_link
+    {:ok, pid} = ZK.start_link()
     pid |> cleanup
     {:ok, pid: pid}
   end
 
-  setup %{pid: pid}=context do
-    on_exit context, fn -> cleanup(pid) end
+  setup %{pid: pid} = context do
+    on_exit(context, fn -> cleanup(pid) end)
     :ok
   end
 
@@ -28,7 +28,7 @@ defmodule Zookeeper.DataWatchTest do
 
     # Create Node
     assert {:ok, path} == ZK.create(pid, path, "1")
-    assert_receive {DW, _, ^path, :data, {"1", %ZnodeStat{version: version=0}}}
+    assert_receive {DW, _, ^path, :data, {"1", %ZnodeStat{version: version = 0}}}
 
     # Update Node
     assert {:ok, %ZnodeStat{version: 1}} = ZK.set(pid, path, "2", version)
@@ -44,7 +44,7 @@ defmodule Zookeeper.DataWatchTest do
   end
 
   test "watcher should die if zookeeper dies" do
-    {:ok, zk} = ZK.start
+    {:ok, zk} = ZK.start()
     {:ok, dw} = DW.start(zk, "/test")
     Process.exit(zk, :shutdown)
     :timer.sleep(1)

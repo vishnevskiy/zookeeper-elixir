@@ -8,8 +8,9 @@ defmodule Zookeeper.WriteLockSleepTest do
     :timer.sleep(sleep)
     IO.puts("#{inspect(self())}: Slept for #{sleep}, Releasing lock")
   end
+
   def test_lock(sleep, wait) do
-    {:ok, zk} = Zookeeper.Client.start_link
+    {:ok, zk} = Zookeeper.Client.start_link()
     Zookeeper.WriteLock.lock(zk, "/wait-writelock", wait, fn -> sleeper(sleep) end)
   end
 end

@@ -51,9 +51,11 @@ defmodule Zookeeper.DataWatch do
       client: client,
       path: path,
       watcher: watcher,
-      prior_data: nil,
+      prior_data: nil
     }
+
     Process.monitor(client)
+
     case maybe_get_data(state) do
       {:noreply, state} -> {:ok, state}
       {:stop, reason, _state} -> {:stop, reason}
@@ -76,7 +78,7 @@ defmodule Zookeeper.DataWatch do
     maybe_get_data(state)
   end
 
-  def handle_info({:DOWN, _ref, :process, pid, reason}, %{client: pid}=state) do
+  def handle_info({:DOWN, _ref, :process, pid, reason}, %{client: pid} = state) do
     {:stop, reason, state}
   end
 
@@ -96,21 +98,26 @@ defmodule Zookeeper.DataWatch do
 
   defp get_data(state) do
     case Zookeeper.Client.get(state.client, state.path, self()) do
-      {:ok, {data, stat}} -> {:noreply, maybe_send_data({data, stat}, state)}
+      {:ok, {data, stat}} ->
+        {:noreply, maybe_send_data({data, stat}, state)}
+
       {:error, :no_node} ->
         case Zookeeper.Client.exists(state.client, state.path, self()) do
           {:ok, _stat} -> get_data(state)
           {:error, :no_node} -> {:noreply, maybe_send_data({nil, nil}, state)}
           {:error, reason} -> {:stop, reason, state}
         end
-      {:error, reason} -> {:stop, reason, state}
+
+      {:error, reason} ->
+        {:stop, reason, state}
     end
   end
 
   defp maybe_send_data(data, state) do
     unless state.prior_data == data do
-      send state.watcher, {__MODULE__, state.client, state.path, :data, data}
+      send(state.watcher, {__MODULE__, state.client, state.path, :data, data})
     end
+
     %{state | prior_data: data}
   end
 end

@@ -20,18 +20,18 @@ defmodule Zookeeper.ElectionTest do
   end
 
   setup_all do
-    {:ok, pid} = ZK.start
+    {:ok, pid} = ZK.start()
     pid |> cleanup
     {:ok, pid: pid}
   end
 
-  setup %{pid: pid}=context do
-    on_exit context, fn -> cleanup(pid) end
+  setup %{pid: pid} = context do
+    on_exit(context, fn -> cleanup(pid) end)
     :ok
   end
 
   test "election", %{pid: pid} do
-    elections = for _ <- 0..2, into: Map.new, do: spawn_contender(pid)
+    elections = for _ <- 0..2, into: Map.new(), do: spawn_contender(pid)
 
     # wait for a leader to be elected
     assert_receive {:leader, _leader_pid, leader_identifier}
@@ -43,12 +43,12 @@ defmodule Zookeeper.ElectionTest do
     assert List.first(contenders) == leader_identifier
 
     # tell second one to cancel election. should never get elected.
-    elections[Enum.at(contenders, 1)] |> Process.unlink
-    elections[Enum.at(contenders, 1)] |> E.cancel
+    elections[Enum.at(contenders, 1)] |> Process.unlink()
+    elections[Enum.at(contenders, 1)] |> E.cancel()
 
     # make leader exit. third contender should be elected.
-    elections[leader_identifier] |> Process.unlink
-    elections[leader_identifier] |> E.cancel
+    elections[leader_identifier] |> Process.unlink()
+    elections[leader_identifier] |> E.cancel()
     expected_leader_identifier = Enum.at(contenders, 2)
     assert_receive {:leader, _leader_pid, ^expected_leader_identifier}
 
@@ -69,6 +69,7 @@ defmodule Zookeeper.ElectionTest do
     pid = spawn_contender(zk, identifier)
     {identifier, pid}
   end
+
   defp spawn_contender(zk, identifier) do
     {:ok, pid} = E.start_link(zk, "/exunit", {TestServer, [identifier, self()]}, identifier)
     pid

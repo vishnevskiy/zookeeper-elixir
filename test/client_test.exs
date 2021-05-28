@@ -7,13 +7,13 @@ defmodule Zookeeper.ClientTest do
   # TODO: test ACL
 
   setup_all do
-    {:ok, pid} = ZK.start_link
+    {:ok, pid} = ZK.start_link()
     pid |> cleanup
     {:ok, pid: pid}
   end
 
-  setup %{pid: pid}=context do
-    on_exit context, fn -> cleanup(pid) end
+  setup %{pid: pid} = context do
+    on_exit(context, fn -> cleanup(pid) end)
     :ok
   end
 
@@ -47,7 +47,9 @@ defmodule Zookeeper.ClientTest do
   end
 
   test "create sequential", %{pid: pid} do
-    assert {:ok, "/exunit/s" <> seq} = ZK.create(pid, "/exunit/s", "", create_mode: :persistent_sequential, makepath: true)
+    assert {:ok, "/exunit/s" <> seq} =
+             ZK.create(pid, "/exunit/s", "", create_mode: :persistent_sequential, makepath: true)
+
     assert String.length(seq) > 0
   end
 
@@ -63,7 +65,7 @@ defmodule Zookeeper.ClientTest do
     path = "/exunit"
     assert {:error, :no_node} == ZK.exists(pid, path)
     assert {:ok, path} == ZK.create(pid, path)
-    assert {:ok, %ZnodeStat{}} = ZK.exists(pid, path) 
+    assert {:ok, %ZnodeStat{}} = ZK.exists(pid, path)
   end
 
   test "exists watch", %{pid: pid} do
@@ -83,9 +85,11 @@ defmodule Zookeeper.ClientTest do
   test "get children", %{pid: pid} do
     path = "/exunit"
     assert {:error, :no_node} = ZK.get_children(pid, path)
+
     for i <- 0..5 do
       assert {:ok, _path} = ZK.create(pid, "#{path}/#{i}", "", makepath: true)
     end
+
     assert {:ok, children} = ZK.get_children(pid, path)
     assert Enum.map(0..5, &to_string/1) == Enum.sort(children)
   end
@@ -103,7 +107,7 @@ defmodule Zookeeper.ClientTest do
     assert {:error, :no_node} == ZK.set(pid, path, "")
     assert {:ok, path} == ZK.create(pid, path)
     assert {:ok, {"", %ZnodeStat{version: version}}} = ZK.get(pid, path)
-    assert {:ok, %ZnodeStat{version: version=1}} = ZK.set(pid, path, "a")
+    assert {:ok, %ZnodeStat{version: version = 1}} = ZK.set(pid, path, "a")
     assert {:error, :bad_version} == ZK.set(pid, path, "b", 0)
     assert {:ok, %ZnodeStat{version: 2}} = ZK.set(pid, path, "b", version)
   end

@@ -20,10 +20,11 @@ defmodule Zookeeper.WriteLock do
   """
   def lock(zk, path, timeout, fun) do
     {:ok, pid} = GenServer.start_link(__MODULE__, {zk, path, fun})
+
     try do
       GenServer.call(pid, :lock, timeout)
     after
-      spawn fn -> GenServer.stop(pid, :normal) end
+      spawn(fn -> GenServer.stop(pid, :normal) end)
     end
   end
 
@@ -32,8 +33,12 @@ defmodule Zookeeper.WriteLock do
   def init({zk, path, fun}) do
     prefix = "#{UUID.uuid4(:hex)}#{@node_name}"
     # Step 1
-    {:ok, created_path} = Zookeeper.Client.create(zk, "#{path}/#{prefix}", "",
-      makepath: true, create_mode: :ephemeral_sequential)
+    {:ok, created_path} =
+      Zookeeper.Client.create(zk, "#{path}/#{prefix}", "",
+        makepath: true,
+        create_mode: :ephemeral_sequential
+      )
+
     node = Path.basename(created_path)
 
     {:ok, %{zk: zk, path: path, fun: fun, node: node, return_pid: nil}}
@@ -53,7 +58,7 @@ defmodule Zookeeper.WriteLock do
     {:noreply, state}
   end
 
-  def handle_cast(:try_lock, _from, %{return_pid: return_pid}=state) do
+  def handle_cast(:try_lock, _from, %{return_pid: return_pid} = state) do
     case try_lock(state) do
       {:reply, value, _state} -> GenServer.reply(return_pid, value)
       _ -> nil
@@ -62,21 +67,27 @@ defmodule Zookeeper.WriteLock do
 
   ## Private
 
-  defp try_lock(%{zk: zk, path: path, fun: fun, node: node}=state) do
+  defp try_lock(%{zk: zk, path: path, fun: fun, node: node} = state) do
     # Find children
     {:ok, children} = Zookeeper.Client.get_children(zk, path)
-    sorted_children = children
-      |> Enum.sort_by(fn (<<_ :: size(256), @node_name, seq :: binary>>) -> String.to_integer(seq) end)
+
+    sorted_children =
+      children
+      |> Enum.sort_by(fn <<_::size(256), @node_name, seq::binary>> -> String.to_integer(seq) end)
+
     # If we're the first we have the lowest sequence number and therefore the lock
     if List.first(sorted_children) == node do
       {:reply, fun.(), state}
     else
       # If not, watch our predecessor. If it changes, we retry.
-      my_pos = Enum.find_index(sorted_children, fn(v) -> v == node end)
+      my_pos = Enum.find_index(sorted_children, fn v -> v == node end)
       next_lower = Enum.at(sorted_children, my_pos - 1)
+
       case Zookeeper.Client.exists(zk, "#{path}/#{next_lower}", self()) do
         {:ok, _stat} ->
-          {:noreply, state} # Wait until the watch fires, then try again
+          # Wait until the watch fires, then try again
+          {:noreply, state}
+
         {:error, :no_node} ->
           try_lock(state)
       end
