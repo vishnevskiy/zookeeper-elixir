@@ -7,13 +7,13 @@ defmodule Zookeeper.ChildrenWatchTest do
   # TODO: test session lost
 
   setup_all do
-    {:ok, pid} = ZK.start
+    {:ok, pid} = ZK.start()
     pid |> cleanup
     {:ok, pid: pid}
   end
 
-  setup %{pid: pid}=context do
-    on_exit context, fn -> cleanup(pid) end
+  setup %{pid: pid} = context do
+    on_exit(context, fn -> cleanup(pid) end)
     :ok
   end
 
@@ -56,7 +56,7 @@ defmodule Zookeeper.ChildrenWatchTest do
   end
 
   test "watcher should die if zookeeper dies" do
-    {:ok, zk} = ZK.start
+    {:ok, zk} = ZK.start()
     {:ok, cw} = CW.start(zk, "/test")
     Process.exit(zk, :shutdown)
     :timer.sleep(1)

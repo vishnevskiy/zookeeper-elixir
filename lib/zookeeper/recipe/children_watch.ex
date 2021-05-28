@@ -48,9 +48,11 @@ defmodule Zookeeper.ChildrenWatch do
       client: client,
       path: path,
       watcher: watcher,
-      prior_children: nil,
+      prior_children: nil
     }
+
     Process.monitor(client)
+
     case maybe_get_children(state) do
       {:noreply, state} -> {:ok, state}
       {:stop, reason, _state} -> {:stop, reason}
@@ -73,7 +75,7 @@ defmodule Zookeeper.ChildrenWatch do
     maybe_get_children(state)
   end
 
-  def handle_info({:DOWN, _ref, :process, pid, reason}, %{client: pid}=state) do
+  def handle_info({:DOWN, _ref, :process, pid, reason}, %{client: pid} = state) do
     {:stop, reason, state}
   end
 
@@ -93,21 +95,26 @@ defmodule Zookeeper.ChildrenWatch do
 
   def get_children(state) do
     case Zookeeper.Client.get_children(state.client, state.path, self()) do
-      {:ok, children} -> {:noreply, maybe_send_children(children, state)}
+      {:ok, children} ->
+        {:noreply, maybe_send_children(children, state)}
+
       {:error, :no_node} ->
         case Zookeeper.Client.exists(state.client, state.path, self()) do
           {:ok, _stat} -> get_children(state)
           {:error, :no_node} -> {:noreply, maybe_send_children([], state)}
           {:error, reason} -> {:stop, reason, state}
         end
-      {:error, reason} -> {:stop, reason, state}
+
+      {:error, reason} ->
+        {:stop, reason, state}
     end
   end
 
   defp maybe_send_children(children, state) do
     unless state.prior_children == children do
-      send state.watcher, {__MODULE__, state.client, state.path, :children, children}
+      send(state.watcher, {__MODULE__, state.client, state.path, :children, children})
     end
+
     %{state | prior_children: children}
   end
 end

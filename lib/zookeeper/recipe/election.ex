@@ -52,16 +52,23 @@ defmodule Zookeeper.Election do
 
     {:ok, pid} = Zookeeper.ChildrenWatch.start_link(client, path)
 
-    state = %{
-      client: client,
-      prefix: prefix,
-      path: path,
-      ma: ma,
-      data: (if identifier == nil do "" else identifier end),
-      pid: nil,
-      node: find_node(client, path, prefix),
-      children: pid,
-    } |> ensure_node
+    state =
+      %{
+        client: client,
+        prefix: prefix,
+        path: path,
+        ma: ma,
+        data:
+          if identifier == nil do
+            ""
+          else
+            identifier
+          end,
+        pid: nil,
+        node: find_node(client, path, prefix),
+        children: pid
+      }
+      |> ensure_node
 
     {:ok, state}
   end
@@ -69,28 +76,33 @@ defmodule Zookeeper.Election do
   def terminate(_reason, %{client: zk, path: path, node: node}) when node != nil do
     Zookeeper.Client.delete(zk, "#{path}/#{node}")
   end
+
   def terminate(_reason, _state), do: :ok
 
   def handle_call(:cancel, _from, state) do
     {:stop, :normal, :ok, state}
   end
 
-  def handle_call(:contenders, _from, %{client: zk, path: path}=state) do
-    contenders = sorted_children(state)
-      |> Enum.map(
-        fn node ->
-          case Zookeeper.Client.get(zk, "#{path}/#{node}") do
-            {:ok, {data, _stat}} -> data
-            {:error, :no_node} -> nil
-          end
+  def handle_call(:contenders, _from, %{client: zk, path: path} = state) do
+    contenders =
+      sorted_children(state)
+      |> Enum.map(fn node ->
+        case Zookeeper.Client.get(zk, "#{path}/#{node}") do
+          {:ok, {data, _stat}} -> data
+          {:error, :no_node} -> nil
         end
-      )
+      end)
       |> Enum.reject(&is_nil(&1))
+
     {:reply, contenders, state}
   end
 
-  def handle_info({Zookeeper.ChildrenWatch, _pid, _path, :children, _}, %{pid: nil, node: node, ma: {module, args}}=state) do
+  def handle_info(
+        {Zookeeper.ChildrenWatch, _pid, _path, :children, _},
+        %{pid: nil, node: node, ma: {module, args}} = state
+      ) do
     children = sorted_children(state)
+
     if List.first(children) == node do
       {:ok, pid} = apply(module, :start_link, args)
       state = %{state | pid: pid}
@@ -106,21 +118,27 @@ defmodule Zookeeper.Election do
 
   ## Private
 
-  defp ensure_node(%{client: zk, path: path, prefix: prefix, data: data, node: nil}=state) do
-    {:ok, created_path} = Zookeeper.Client.create(zk, "#{path}/#{prefix}", data, makepath: true, create_mode: :ephemeral_sequential)
+  defp ensure_node(%{client: zk, path: path, prefix: prefix, data: data, node: nil} = state) do
+    {:ok, created_path} =
+      Zookeeper.Client.create(zk, "#{path}/#{prefix}", data,
+        makepath: true,
+        create_mode: :ephemeral_sequential
+      )
+
     %{state | node: Path.basename(created_path)}
   end
+
   defp ensure_node(state), do: state
 
   defp find_node(zk, path, prefix) do
     case Zookeeper.Client.get_children(zk, path) do
-      {:ok, children} -> children |> Enum.filter(&String.starts_with?(&1, prefix)) |> List.first
+      {:ok, children} -> children |> Enum.filter(&String.starts_with?(&1, prefix)) |> List.first()
       {:error, :no_node} -> nil
     end
   end
 
   defp sorted_children(%{children: cw}) do
     Zookeeper.ChildrenWatch.children(cw)
-      |> Enum.sort_by(fn (<<_ :: size(256), @node_name, seq :: binary>>) -> String.to_integer(seq) end)
+    |> Enum.sort_by(fn <<_::size(256), @node_name, seq::binary>> -> String.to_integer(seq) end)
   end
 end

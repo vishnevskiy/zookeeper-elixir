@@ -14,14 +14,14 @@ defmodule Zookeeper.Mixfile do
 
   def application do
     [
-      applications: [:erlzk, :uuid, :logger],
+      applications: [:erlzk, :uuid, :logger]
     ]
   end
 
   defp deps do
     [
       {:erlzk, "~> 0.6.4"},
-      {:dialyze, "~> 0.2.1",  only: :dev},
+      {:dialyze, "~> 0.2.1", only: :dev},
       {:uuid, "~> 1.1"}
     ]
   end
